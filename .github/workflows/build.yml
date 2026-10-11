@@ -3,6 +3,12 @@ name: Build CI
 on:
   workflow_call:
   workflow_dispatch:
+  push:
+    paths:
+      - 'kernel/**'
+      - 'version'
+      - 'revision'
+      - '.github/workflows/build.yml'
 
 jobs:
   Build-kpimg:
