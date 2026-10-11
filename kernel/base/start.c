@@ -37,6 +37,10 @@ KP_EXPORT_SYMBOL(kallsyms_on_each_symbol);
 unsigned long (*kallsyms_lookup_name)(const char *name) = 0;
 KP_EXPORT_SYMBOL(kallsyms_lookup_name);
 
+/* MT6991(6.6) 上「先翻 PTE 再裸写内核 text」的路径会触发 SError/oops ——
+ * 改用内核自带的 aarch64_insn_patch_text()（fixmap + patch_lock + stop_machine）。 */
+int (*kp_aarch64_insn_patch_text)(void *addrs[], u32 insns[], int cnt) = 0;
+
 void (*printk)(const char *fmt, ...) = 0;
 KP_EXPORT_SYMBOL(printk);
 
@@ -434,6 +438,8 @@ static void start_init(uint64_t kimage_voff, uint64_t linear_voff)
 
     uint64_t kallsym_addr = kernel_va + start_preset.kallsyms_lookup_name_offset;
     kallsyms_lookup_name = (typeof(kallsyms_lookup_name))(kallsym_addr);
+    kp_aarch64_insn_patch_text =
+        (typeof(kp_aarch64_insn_patch_text))kallsyms_lookup_name("aarch64_insn_patch_text");
     kernel_stext_va = kallsyms_lookup_name("_stext");
     printk = (typeof(printk))kallsyms_lookup_name("printk");
     if (!printk) printk = (typeof(printk))kallsyms_lookup_name("_printk");

@@ -185,4 +185,6 @@ static inline uint64_t pgtable_phys_kernel(uint64_t va)
 
 void modify_entry_kernel(uint64_t va, uint64_t *entry, uint64_t value);
 
+extern int (*kp_aarch64_insn_patch_text)(void *addrs[], u32 insns[], int cnt);
+
 #endif
